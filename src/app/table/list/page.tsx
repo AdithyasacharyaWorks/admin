@@ -1,4 +1,3 @@
-import Image from "next/image";
 import TableRoomComponent from "@/components/custom/Table-RoomTable"
 export default async function Home() {
 

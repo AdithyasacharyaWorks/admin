@@ -315,7 +315,7 @@ const ListComponent = ({
                   onCheckedChange={(value) =>
                     table
                       .getColumn("featured")
-                      ?.setFilterValue(value ? true : false)
+                      ?.setFilterValue(value ? true : "")
                   }
                 >
                   Show Featured
