@@ -52,9 +52,9 @@ const formatDate = (dateString: string) => {
     minute: "2-digit",
     second: "2-digit",
   } as const;
-  
+
   const formattedDate = new Intl.DateTimeFormat("en-GB", options).format(new Date(dateString));
-  
+
   // Manually format the time part to be separated by a space
   const [date, time] = formattedDate.split(", ");
   return `${date} ${time}`;
@@ -70,17 +70,13 @@ const ListComponent = ({
   type: "category" | "menu";
 }) => {
   const router = useRouter();
+
   const handleDeleteCategory = async (id: string) => {
     try {
-      const res = await axios.delete(
-        `http://localhost:3000/api/category/${id}`
-      );
-      toast.message("Sucess", {
-        description: "deleted Category",
+      await axios.delete(`http://localhost:3000/api/category/${id}`);
+      toast.message("Success", {
+        description: "Deleted Category",
       });
-      setTimeout(() => {
-        router.refresh();
-      }, 1000);
       router.refresh();
     } catch (error) {
       toast.message("Error", {
@@ -91,9 +87,9 @@ const ListComponent = ({
 
   const handleDeleteMenu = async (id: string) => {
     try {
-      const res = await axios.delete(`http://localhost:3000/api/menu/${id}`);
-      toast.message("Sucess", {
-        description: "deleted Menu ",
+      await axios.delete(`http://localhost:3000/api/menu/${id}`);
+      toast.message("Success", {
+        description: "Deleted Menu",
       });
       router.refresh();
     } catch (error) {
@@ -102,6 +98,7 @@ const ListComponent = ({
       });
     }
   };
+
   const getColumns = (
     type: "category" | "menu",
     router: ReturnType<typeof useRouter>
@@ -112,12 +109,12 @@ const ListComponent = ({
         { accessorKey: "description", header: "Description" },
         { accessorKey: "slug", header: "Slug" },
         {
-          accessorKey: "createdAt",
+          accessorKey: "$createdAt",
           header: "Created At",
           cell: ({ getValue }) => formatDate(getValue() as string),
         },
         {
-          accessorKey: "updatedAt",
+          accessorKey: "$updatedAt",
           header: "Updated At",
           cell: ({ getValue }) => formatDate(getValue() as string),
         },
@@ -139,21 +136,20 @@ const ListComponent = ({
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
                   <DropdownMenuItem
                     onClick={() =>
-                      navigator.clipboard.writeText(categoryItem.id!)
+                      navigator.clipboard.writeText(categoryItem.$id!)
                     }
                   >
-                    Copy Category item ID
+                    Copy Category Item ID
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => router.push(`/category/${categoryItem.id}`)}
+                    onClick={() => router.push(`/category/${categoryItem.$id}`)}
                   >
-                    View category item details
+                    View Category Item Details
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  {/* <DropdownMenuItem onClick={() => router.push(`/category/${categoryItem.id}`)}> */}
                   <DropdownMenuItem
-                    onClick={() => handleDeleteCategory(`${categoryItem.id}`)}
+                    onClick={() => handleDeleteCategory(categoryItem.$id!)}
                   >
                     <span className="text-red-500">Delete</span>
                   </DropdownMenuItem>
@@ -165,13 +161,26 @@ const ListComponent = ({
       ];
     } else {
       return [
+        {
+          accessorKey: "imageUrl",
+          header: "Image",
+          cell: ({ getValue }) => (
+            <img src={getValue() as string} alt="Menu item" className="w-10 h-10 object-cover rounded-full" />
+          ),
+        },
         { accessorKey: "menuItemName", header: "Name" },
         { accessorKey: "menuDescription", header: "Description" },
         {
           accessorKey: "featured",
           header: "Featured",
-          cell: ({ row }) =>
-            (row.original as MenuItem).featured ? "Yes" : "No",
+          cell: ({ row }) => {
+            const isFeatured = (row.original as MenuItem).featured;
+            return (
+              <span className={isFeatured ? "text-green-500 font-bold" : "text-red-500"}>
+                {isFeatured ? "Yes" : "No"}
+              </span>
+            );
+          },
         },
         {
           accessorKey: "available",
@@ -187,12 +196,12 @@ const ListComponent = ({
         },
         { accessorKey: "price", header: "Price" },
         {
-          accessorKey: "createdAt",
+          accessorKey: "$createdAt",
           header: "Created At",
           cell: ({ getValue }) => formatDate(getValue() as string),
         },
         {
-          accessorKey: "updatedAt",
+          accessorKey: "$updatedAt",
           header: "Updated At",
           cell: ({ getValue }) => formatDate(getValue() as string),
         },
@@ -214,19 +223,19 @@ const ListComponent = ({
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
                   <DropdownMenuItem
-                    onClick={() => navigator.clipboard.writeText(menuItem.id!)}
+                    onClick={() => navigator.clipboard.writeText(menuItem.$id!)}
                   >
-                    Copy menu item ID
+                    Copy Menu Item ID
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => router.push(`/menu/${menuItem.id}`)}
+                    onClick={() => router.push(`/menu/${menuItem.$id}`)}
                   >
-                    View menu item details
+                    View Menu Item Details
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => handleDeleteMenu(menuItem?.id!)}
+                    onClick={() => handleDeleteMenu(menuItem.$id!)}
                   >
                     <span className="text-red-500">Delete Item</span>
                   </DropdownMenuItem>
@@ -238,19 +247,15 @@ const ListComponent = ({
       ];
     }
   };
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
 
-  // Initialize useRouter hook
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
     data,
-    columns: getColumns(type, router), // Pass the router instance to columns function
+    columns: getColumns(type, router),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -269,7 +274,7 @@ const ListComponent = ({
 
   return (
     <div className="w-full p-4 mt-20">
-      <Toaster className="mt-10 " position="top-center" />
+      <Toaster className="mt-10" position="top-center" />
       <div className="flex items-center py-4 gap-2">
         <div className="sm:flex sm:flex-row sm:gap-5 gap-5">
           <Input
@@ -373,8 +378,6 @@ const ListComponent = ({
                   onCheckedChange={(value) => column.toggleVisibility(!!value)}
                 >
                   {column.id}
-                  {/* Add option to open a particular column */}
-                  <DropdownMenuItem>Open {column.id}</DropdownMenuItem>
                 </DropdownMenuCheckboxItem>
               ))}
           </DropdownMenuContent>

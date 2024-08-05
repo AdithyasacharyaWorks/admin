@@ -71,7 +71,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ type, data }) => {
       if (type === "Add") {
         await axios.post("http://localhost:3000/api/category", payload);
       } else {
-        await axios.put(`http://localhost:3000/api/category/${data.id}`, payload);
+        await axios.put(`http://localhost:3000/api/category/${data.$id}`, payload);
       }
 
       reset();
@@ -173,7 +173,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ type, data }) => {
         <Button type="submit" disabled={loading}>
           {loading ? "Saving..." : type==="Edit"?"Update Category":"Save Category"}
         </Button>
-        <Button variant={"destructive"} onClick={() => router.back()}>
+        <Button variant={"destructive"} onClick={(e) => {e.preventDefault();router.back()}}>
           Cancel
         </Button>
       </div>

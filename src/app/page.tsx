@@ -6,6 +6,9 @@ export default async function Home() {
 
   const data = await response.json()
   return (
-    <TableRoomComponent data={data?.data}/>
+    // <TableRoomComponent data={data?.data}/>
+      <div className="flex justify-center items-center">
+        dashboard
+      </div>
   );
 }

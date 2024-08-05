@@ -1,10 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
+import { NextRequest, NextResponse } from 'next/server';
+import { database, databaseId, menuCollectionId } from '@/backend/appwriteProvider'; // Adjust path if necessary
+import { Query, ID } from 'appwrite';
 
 export async function GET() {
   try {
-    const response = await axios.get('http://localhost:8080/api/v1/menuItems');
-    return NextResponse.json({ status: 200, data: response.data });
+    // Fetch menu items from Appwrite
+    const response = await database.listDocuments(
+      databaseId!,
+      menuCollectionId!,
+      [Query.select(['menuItemName','menuDescription','imageUrl','featured','available','category','price','tags','labels','$id','$createdAt','$updatedAt'])]
+    );
+    return NextResponse.json({ status: 200, data: response.documents });
   } catch (error) {
     console.error(error);
     return NextResponse.error();
@@ -13,13 +19,18 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-
     const data = await req.json();
-    console.log(data)
-    const response = await axios.post('http://localhost:8080/api/v1/menuItems', data);
-    return NextResponse.json({ status: 201, data: response.data });
+    // Create a new menu item in Appwrite
+    const response = await database.createDocument(
+      databaseId!,
+      menuCollectionId!,
+      ID.unique(),
+      data,
+      [Query.select(['menuItemName','menuDescription','imageUrl','featured','available','category','price','tags','labels','$id','$createdAt','$updatedAt'])]
+
+    );
+    return NextResponse.json({ status: 201, data: response });
   } catch (error) {
-    console.log(error)
     console.error(error);
     return NextResponse.error();
   }
@@ -28,9 +39,16 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const data = await req.json();
-    const { id } = data;
-    const response = await axios.put(`http://localhost:8080/api/v1/menuItems/${id}`, data);
-    return NextResponse.json({ status: 200, data: response.data });
+    const { id, ...updateData } = data;
+    // Update an existing menu item in Appwrite
+    const response = await database.updateDocument(
+      databaseId!,
+      menuCollectionId!,
+      id,
+      updateData,
+      [Query.select(['menuItemName','menuDescription','imageUrl','featured','available','category','price','tags','labels','$id','$createdAt','$updatedAt'])]
+    );
+    return NextResponse.json({ status: 200, data: response });
   } catch (error) {
     console.error(error);
     return NextResponse.error();

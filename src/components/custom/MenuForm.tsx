@@ -71,8 +71,8 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ type, data }) => {
     control,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(menuItemSchema),
-    defaultValues: { ...data },
+    // resolver: zodResolver(menuItemSchema),
+    // defaultValues: { ...data },
   });
 
   const [file, setFile] = useState<File | null>();
@@ -89,8 +89,8 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ type, data }) => {
       setValue("tags", data?.tags);
       setValue("labels", data?.labels);
       setValue("category", data.category);
-      setValue("createdAt", new Date(data.createdAt));
-      setValue("updatedAt", new Date(data.updatedAt));
+      // setValue("createdAt", new Date(data.createdAt));
+      // setValue("updatedAt", new Date(data.updatedAt));
       setValue("featured", data.featured ?? false);
       setValue("available", data.available ?? true);
       setFile(data.imageUrl);
@@ -118,23 +118,22 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ type, data }) => {
         imageUrl = imageUpload?.url;
       }
 
+      console.log(formData)
       const payload = {
         ...formData,
         imageUrl,
-        updatedAt: new Date(),
-        createdAt: new Date(),
         featured: formData.featured,
         available: formData.available,
         price: parseInt(formData.price),
       };
+      console.log(data)
 
       if (type === "Add") {
-        payload.createdAt = new Date();
         await axios.post("http://localhost:3000/api/menu", payload);
       } else {
-        await axios.put(`http://localhost:3000/api/menu/${data.id}`, {
+        await axios.put(`http://localhost:3000/api/menu/${data.$id}`, {
           ...payload,
-          id: data?.id,
+          id: data?.$id,
         });
       }
 
@@ -315,12 +314,6 @@ const MenuItemForm: React.FC<MenuItemFormProps> = ({ type, data }) => {
       </Button>
       <Button onClick={(e)=>{e.preventDefault(),router.push('/menu')}} variant={"destructive"}>Cancel</Button>
       </div>
-      {/* {showSuccess && (
-        <p className="text-green-500 font-thin">Operation successful!</p>
-      )}
-      {showError && (
-        <p className="text-red-500 font-thin">Something went wrong!</p>
-      )} */}
     </form>
   );
 };

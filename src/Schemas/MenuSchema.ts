@@ -3,15 +3,15 @@ import { number, z } from "zod";
 
 // Define the Zod schema
 export const menuItemSchema = z.object({
-  id:z.string().optional(),
+  $id:z.string().optional(),
   menuItemName: z.string().min(1, "Menu item name is required"),
   menuDescription: z.string().min(1, "Menu description is required"),
   imageUrl: z.string().url("Invalid URL format").optional(),
   featured: z.boolean().optional(),
   available: z.boolean().optional(),
   price: z.number().optional(),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
+  $createdAt: z.date().optional(),
+  $updatedAt: z.date().optional(),
   tags: z.string().optional(),
   labels:z.string().optional(),
   category: z.string().min(1, "Category is required"),
